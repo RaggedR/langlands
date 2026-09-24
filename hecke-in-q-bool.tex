@@ -1,0 +1,611 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2.5em}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!60!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{claim}[theorem]{Claim}
+
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\OO}{\mathcal{O}}
+\newcommand{\cat}[1]{\mathbf{#1}}
+\newcommand{\Set}{\cat{Set}}
+\newcommand{\Vect}{\cat{Vect}}
+\newcommand{\Coh}{\mathrm{Coh}}
+\newcommand{\Bun}{\mathrm{Bun}}
+\newcommand{\Rep}{\mathrm{Rep}}
+\newcommand{\Perv}{\mathrm{Perv}}
+\newcommand{\Gr}{\mathrm{Gr}}
+\newcommand{\ext}[1]{\llbracket #1 \rrbracket}
+\newcommand{\con}{\triangleleft}
+\newcommand{\dual}[1]{{}^{L}\!#1}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\End}{End}
+\DeclareMathOperator{\GL}{GL}
+\DeclareMathOperator{\SL}{SL}
+\DeclareMathOperator{\SO}{SO}
+\DeclareMathOperator{\Sp}{Sp}
+\DeclareMathOperator{\Ind}{Ind}
+\DeclareMathOperator{\Gal}{Gal}
+\newcommand{\qbin}[2]{\genfrac{[}{]}{0pt}{}{#1}{#2}_{q}}
+\newcommand{\Fl}{\mathrm{Fl}}
+\newcommand{\Schub}{\mathfrak{S}}
+\newcommand{\Groth}{\mathfrak{G}}
+
+\definecolor{okgreen}{rgb}{0.0,0.45,0.15}
+\definecolor{nored}{rgb}{0.65,0.0,0.0}
+\definecolor{openblue}{rgb}{0.0,0.25,0.6}
+\newcommand{\OK}{\textcolor{okgreen}{\textbf{verified}}}
+\newcommand{\CL}{\textbf{classical}}
+\newcommand{\NEW}{\textcolor{openblue}{\textbf{open}}}
+
+\title{\bfseries The Hecke Algebra Was Already There\\[0.4em]
+\large what \texttt{q-bool} and \texttt{lascoux} contain of the Langlands
+programme, and the one chapter that closes the gap}
+\author{Robin Langer \and Claude}
+\date{24 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Two repositories built for unrelated reasons --- \texttt{q-bool}, on containers
+over a finite field, and \texttt{lascoux}, on the plactic monoid as a container
+--- turn out to contain, unnamed, several of the standard objects of the
+Langlands programme. The central observation is not an analogy: the operator
+$S_i$ of \texttt{schubert.pdf}, defined there as pushforward along a forgetful
+map of flags followed by pullback, \emph{is} the Iwahori--Hecke generator, and
+the relations verified there are a presentation of $H_n(q)$. We re-derive this
+from the geometry independently of \texttt{flag.py}
+(\S\ref{sec:iwahori}); identify the refuted nilCoxeter conjecture's true target
+as the Grothendieck polynomials of Lascoux--Sch\"utzenberger
+(\S\ref{sec:groth}); locate the Langlands dual group in the Bernstein centre of
+the \emph{affine} Hecke algebra, one level above where \texttt{q-bool}
+currently works (\S\ref{sec:dual}); verify that the Hall constants of
+\texttt{q-container.pdf}~\S9 are the Hall--Littlewood constants, which by
+Macdonald's Chapter~V are the spherical Hecke algebra of $\GL_n$ over a local
+field (\S\ref{sec:satake}); identify the two-parameter ceiling of
+\texttt{q-container.pdf} with the loop direction, i.e.\ with Cherednik's double
+affine Hecke algebra (\S\ref{sec:daha}); and show that
+\texttt{q-dirichlet.pdf}~\S7 has already reached the automorphic side of
+function-field Langlands (\S\ref{sec:autom}). For \texttt{lascoux} we record
+three links, one of which --- $f^{\lambda}_{\mu\nu}(0) = c^{\lambda}_{\mu\nu}$
+--- is a bridge between the two repositories rather than to Langlands, and is
+verified here. Four computations, all independent of the theorems they check,
+are in \texttt{code/verify.py}. \S\ref{sec:not} records what does \emph{not}
+link, and \S\ref{sec:status} the status of every claim.
+\end{abstract}
+
+\section{The question}
+
+\texttt{q-bool} was written to ask what containers become over $\FF_q$.
+\texttt{lascoux} was written to ask whether Fomin's local rules are a container
+isomorphism. Neither was written with the Langlands programme in view, and
+neither mentions it.
+
+The mishnah is therefore: nothing should connect. Container theory is a
+fragment of dependent type theory; Langlands is arithmetic. The shared
+vocabulary --- $q$, flags, Hall, Macdonald --- is the vocabulary of algebraic
+combinatorics, which both subjects borrow from, and borrowing a word is not
+sharing an object.
+
+The objection is Proposition~4.1 of \texttt{schubert.pdf}. It records, as a
+computational finding about an operator built from a fibration of flag
+varieties, three relations:
+\[
+  T_i^2 = (q-1)T_i + qI,
+  \qquad
+  T_iT_jT_i = T_jT_iT_j \ (|i-j|=1),
+  \qquad
+  T_iT_j = T_jT_i \ (|i-j|\ge 2).
+\]
+That is not a family resemblance. It is a presentation, and the algebra it
+presents has a name.
+
+\section{Hecke operators, in one page}\label{sec:hecke}
+
+For orientation, the object in its five standard guises. Only the first three
+are needed below.
+
+\paragraph{Sublattices.} A modular form of weight $k$ is a function on lattices
+$\Lambda \subset \CC$, homogeneous of degree $-k$. For a prime $p$ there are
+$p+1$ sublattices of index $p$, and no canonical choice among them, so one
+sums:
+\[
+  (T_p F)(\Lambda) \;=\; \sum_{[\Lambda : \Lambda'] = p} F(\Lambda') .
+\]
+On $q$-expansions, $T_p f = \sum_n (a_{np} + p^{k-1}a_{n/p})q^n$; for an
+eigenform normalised with $a_1 = 1$, the Fourier coefficients \emph{are} the
+eigenvalues, which is why $L(s,f)$ has an Euler product.
+
+\paragraph{Double cosets.} $T_p$ is the double coset
+$[\Gamma \left(\begin{smallmatrix}1&0\\0&p\end{smallmatrix}\right)\Gamma]$.
+Adelically, for a local field $F$ with ring of integers $\OO$ and residue field
+$\FF_q$, the \emph{spherical} Hecke algebra is $C_c(K \backslash G / K)$ under
+convolution with $K = G(\OO)$; the \emph{Iwahori} Hecke algebra takes instead
+$K = $ the preimage of a Borel. The two differ, and the difference is exactly
+the gap identified in \S\ref{sec:dual}.
+
+\paragraph{Satake.} The spherical Hecke algebra is commutative, and
+\[
+  \mathcal{H}\bigl(G(F), G(\OO)\bigr) \;\cong\; \CC[X_*(T)]^{W}
+  \;\cong\; \Rep\bigl(\dual{G}\bigr) ,
+\]
+the representation ring of the Langlands dual group. A Hecke eigenvalue is thus
+not a number but a semisimple conjugacy class in $\dual{G}(\CC)$.
+
+\paragraph{Trees.} For $G = \GL_2$, the quotient $G(F)/G(\OO)F^\times$ is the
+vertex set of the $(q+1)$-regular Bruhat--Tits tree, and the Hecke operator is
+its adjacency operator. Deligne's bound $|a_p| \le 2p^{(k-1)/2}$ is the optimal
+spectral gap, which is where Ramanujan graphs come from.
+
+\paragraph{Correspondences.} Geometrically, a Hecke operator modifies a
+$G$-bundle at one point: the stack of $(E, E', x, \varphi)$ with $\varphi$ an
+isomorphism away from $x$, with its two projections to $\Bun_G$. The type of
+modification is a cocharacter of $G$, i.e.\ a weight of $\dual{G}$ --- Satake
+again.
+
+\medskip
+\noindent
+Each guise is the same refusal: an operation defined only up to a finite set of
+choices at one place, and a sum instead of a choice.
+
+\section{\texttt{schubert.pdf} constructs the Iwahori--Hecke
+algebra}\label{sec:iwahori}
+
+\begin{definition}\label{def:flag}
+Let $\Fl_n(\FF_q)$ be the set of complete flags in $\FF_q^n$, $\pi_i$ the map
+forgetting the $i$-th subspace, and
+\[
+  (S_i f)(F) \;=\; \sum_{\pi_i(F') = \pi_i(F)} f(F') .
+\]
+This is Definition~3.1 of \texttt{schubert.pdf}, verbatim.
+\end{definition}
+
+\begin{theorem}\label{thm:iwahori}
+$S_i$ is convolution by the indicator function of the $i$-th minimal parabolic
+$P_i$, hence $T_i := S_i - I$ is convolution by $\mathbf{1}_{Bs_iB}$; the $T_i$
+generate the Iwahori--Hecke algebra $H_n(q)$ of type $A_{n-1}$, and
+\[
+  \End_{\GL_n(\FF_q)}\bigl(\Ind_B^G \mathbf{1}\bigr)
+  \;=\; \End_{\GL_n(\FF_q)}\bigl(\CC[G/B]\bigr)
+  \;\cong\; H_n(q) .
+\]
+\end{theorem}
+
+\begin{proof}
+Functions on $\Fl_n(\FF_q) = G/B$ with $G$ acting; $\pi_i$ is the projection
+$G/B \to G/P_i$, so pushforward-then-pullback is convolution by
+$\mathbf{1}_{P_i}$. The Bruhat decomposition of a minimal parabolic is
+$P_i = B \sqcup Bs_iB$, so $\mathbf{1}_{P_i} = \mathbf{1}_B +
+\mathbf{1}_{Bs_iB}$ and $T_i = S_i - I$ is convolution by
+$\mathbf{1}_{Bs_iB}$. Since $|Bs_iB/B| = q$, the fibre of $\pi_i$ has
+$q + 1 = |\mathbb{P}^1(\FF_q)|$ points and
+$\mathbf{1}_{Bs_iB} * \mathbf{1}_{Bs_iB} = (q-1)\mathbf{1}_{Bs_iB} +
+q\,\mathbf{1}_B$. The braid relations are the braid relations in $W = S_n$
+lifted through the Bruhat decomposition. The last display is Iwahori's theorem
+\cite{Iwahori}.
+\end{proof}
+
+\begin{remark}
+This is what Proposition~4.1 of \texttt{schubert.pdf} records, one level of
+abstraction down: there the relations are found by computing the matrix of
+$S_i$ on cell classes and checking. The identification above says why they were
+always going to hold, and that the cell rule quoted in Example~3.3 there,
+\[
+  S_i[w] =
+  \begin{cases} [w] + [ws_i], & \ell(ws_i) > \ell(w),\\
+                q[w] + q[ws_i], & \ell(ws_i) < \ell(w), \end{cases}
+\]
+is the standard $H_n(q)$ action on the Bruhat basis.
+\end{remark}
+
+\begin{proposition}\label{prop:v1}
+\OK. \texttt{code/verify.py} rebuilds $\Fl_n(\FF_q)$ from subspace enumeration,
+computes the relative position from the rank matrix of
+Definition~\ref{def:flag}, checks $|\Fl_n| = [n]_q!$ and $|C_w| = q^{\ell(w)}$,
+checks every fibre of $\pi_i$ has $q+1$ elements, checks that $S_i$ applied to
+a cell indicator is constant on cells, and then verifies
+$S_i^2 = (q+1)S_i$, the Hecke quadratic, both braid relations and
+$T_i^2 \neq 0$, for $(n,q) \in \{(2,2),(2,3),(3,2),(3,3),(4,2)\}$ --- all $315$
+flags and $24$ cells in the largest case. It shares no code with
+\texttt{q-bool/code/flag.py} and does not assume the cell rule.
+\end{proposition}
+
+\section{The refutation relocated: Grothendieck, not
+Schubert}\label{sec:groth}
+
+\texttt{schubert.pdf} proves that no nilpotent divided difference exists on the
+flag container over any finite field, and concludes that the nilCoxeter half of
+its Conjecture is refuted. Both are correct. What the document does not say is
+that the object it \emph{did} find has a Schubert-like basis of its own.
+
+\begin{proposition}\label{prop:zero}
+The $q \to 0$ degeneration of $H_n(q)$ is the $0$-Hecke algebra, generated by
+idempotents $\pi_i$ with $\pi_i^2 = \pi_i$ --- Proposition~4.1(a) of
+\texttt{schubert.pdf} is this statement for $S_i/(q+1)$. The $\pi_i$ are the
+Demazure operators; they act on $K(G/B)$; and the basis they generate is the
+\emph{Grothendieck polynomials} $\Groth_w$ of Lascoux--Sch\"utzenberger
+\cite{LS82}.
+\end{proposition}
+
+So the flag container does not fail to produce a Schubert-type basis. It
+produces the $K$-theoretic one. This is forced: counting $\FF_q$-points is a
+$K$-theoretic invariant, and Schubert polynomials $\Schub_w$ live in the Chow
+ring. The table in \S5 of \texttt{schubert.pdf} states exactly this dichotomy;
+what is added here is that the left-hand column has a named polynomial basis,
+and that the name is Lascoux --- the subject of the sibling repository.
+
+\begin{proposition}\label{prop:nilhecke}
+\texttt{schubert.pdf} Question~5.2 (grade the positions of the flag container
+by the torus action; do the divided differences appear?) is answered by the
+nilHecke ring of Kostant--Kumar \cite{KK86}, acting on $H^*_T(G/B)$, in which
+$\partial_i$ and $\Schub_w$ live; Lusztig's graded affine Hecke algebra
+\cite{Lusztig89} is the object interpolating between it and $H_n(q)$. The
+question is not open.
+\end{proposition}
+
+\begin{remark}
+The failure point $q = -1$ of \texttt{schubert.pdf} Theorem~4.2 is the
+arithmetic signature of this dichotomy rather than an accident: $q = -1$ is
+where a point count degenerates to an Euler characteristic.
+\end{remark}
+
+\section{Where the dual group is, and why \texttt{q-bool} cannot yet see
+it}\label{sec:dual}
+
+Theorem~\ref{thm:iwahori} gives the Iwahori-level algebra over a \emph{finite}
+field. The Langlands dual group is not visible there.
+
+\begin{proposition}\label{prop:centre}
+The centre of the finite Hecke algebra $H_n(q)$ is the algebra of symmetric
+polynomials in the Jucys--Murphy elements --- a shadow of $\Rep(\GL_n)$, but
+finite-dimensional and carrying no lattice. By contrast, for the \emph{affine}
+Hecke algebra $\widetilde{H}$ of $G(F)$, Bernstein's theorem gives
+\[
+  Z(\widetilde{H}) \;\cong\; \CC[X_*(T)]^{W} \;\cong\; \Rep(\dual{G}) .
+\]
+The Langlands dual group is the centre of the affine algebra, not of the finite
+one.
+\end{proposition}
+
+\begin{remark}
+\texttt{q-bool} is already at $\OO$ in one document and at $\FF_q$ in another,
+and has not joined them. \texttt{q-container.pdf}~\S9 passes from
+$\Vect_{\FF_q}$ to finite modules over a discrete valuation ring with residue
+field $\FF_q$ --- the lattice side. \texttt{schubert.pdf} works with flags over
+$\FF_q$ --- the flag side. The same local field underlies both. What is missing
+is one construction.
+\end{remark}
+
+\begin{question}\label{q:affine}
+\NEW. Define the \emph{affine flag container}: shapes the affine Weyl group
+$\widetilde{W} = \ZZ^{n} \rtimes S_n$, positions $\FF_q^{\ell(w)}$, obtained by
+replacing complete flags in $\FF_q^n$ by complete lattice chains in $\OO^n$.
+Three things should then be checked, in this order.
+\begin{enumerate}[nosep,label=(\roman*)]
+\item The counting series $\sum_{w \in \widetilde{W}} X^{\ell(w)}$ is no longer
+a polynomial. Bott's formula predicts a rational function; confirming which one
+is the cheapest possible test that the construction is right.
+\item The operators $S_i$, now indexed by $i = 0, 1, \dots, n-1$, satisfy the
+affine braid relations together with the same quadratic.
+\item The Bernstein centre of the resulting algebra is
+$\CC[x_1^{\pm},\dots,x_n^{\pm}]^{S_n} = \Rep(\GL_n(\CC))$.
+\end{enumerate}
+Step (iii), if it goes through, is the Langlands dual group appearing inside a
+container.
+\end{question}
+
+The $\GL_2$ case of the relevant spherical identity is verified in
+\texttt{verify.py}, by enumerating sublattice chains in $\ZZ_p^2$ rather than
+by quoting the Hecke ring:
+
+\begin{proposition}\label{prop:v3}
+\OK. For $p \in \{2,3,5\}$: there are $p+1$ sublattices of index $p$ and
+$p^2+p+1$ of index $p^2$, of which exactly one has elementary divisors $(p,p)$
+and $p^2+p$ have $(1,p^2)$; the number of chains
+$\ZZ^2 \supset \Lambda' \supset \Lambda''$ with both steps of index $p$ is
+$(p+1)^2$, distributed as multiplicity $p+1$ over the $(p,p)$ lattice and
+multiplicity $1$ over each $(1,p^2)$ lattice. Hence
+\[
+  T_{(p,1)}^{\,2} \;=\; T_{(p^2,1)} \;+\; (q+1)\, T_{(p,p)} ,
+\]
+whose normalised Satake image is $(x+y)^2 = (x^2+y^2) + 2xy$ in
+$\ZZ[x+y,(xy)^{\pm 1}] = \Rep(\GL_2)$.
+\end{proposition}
+
+\section{Hall--Littlewood is the spherical Hecke basis}\label{sec:satake}
+
+This is the strongest link, and the cheapest to act on.
+
+\begin{proposition}\label{prop:v2}
+\OK. Let $g^{\lambda}_{\mu\nu}(p)$ count submodules $U \subseteq M_\lambda$ over
+$\OO$ with $U \cong M_\nu$ and $M_\lambda/U \cong M_\mu$, and let
+$f^{\lambda}_{\mu\nu}(t)$ be defined by
+$P_\mu(x;t)P_\nu(x;t) = \sum_\lambda f^{\lambda}_{\mu\nu}(t) P_\lambda(x;t)$.
+Then
+\[
+  g^{\lambda}_{\mu\nu}(p)
+  \;=\; p^{\,n(\lambda) - n(\mu) - n(\nu)}\, f^{\lambda}_{\mu\nu}(p^{-1}) .
+\]
+Verified over $128$ instances, all $\lambda$ with $|\lambda| \le 4$, $p \in
+\{2,3\}$: submodules enumerated by brute-force closure in $\ZZ/p^N$;
+Hall--Littlewood polynomials computed symbolically from the Weyl-type formula in
+four variables; neither side quoted from Macdonald.
+\end{proposition}
+
+That is Hall's theorem, and it is the content of \texttt{q-container.pdf}~\S9,
+which is stated there as classical but unverified. What \S9 does not say is
+what Chapter~V of the same book of Macdonald's says:
+
+\begin{theorem}[Macdonald \cite{Macdonald}, Ch.~V]\label{thm:chV}
+The spherical Hecke algebra $\mathcal{H}(\GL_n(F), \GL_n(\OO))$ of a local field
+with residue field $\FF_q$ is isomorphic to the Hall algebra of finite
+$\OO$-modules; its zonal spherical functions are the Hall--Littlewood
+polynomials $P_\lambda(x;q^{-1})$; and composing with Satake gives
+\[
+  \text{Hall algebra of finite } \OO\text{-modules}
+  \;\cong\; \mathcal{H}\bigl(\GL_n(F),\GL_n(\OO)\bigr)
+  \;\cong\; \Rep\bigl(\dual{\GL_n}\bigr) .
+\]
+\end{theorem}
+
+\begin{remark}
+\texttt{q-container.pdf}~\S9 already writes the normalisation
+$P_\lambda(x; q^{-1})$ --- Macdonald's Chapter~V normalisation --- and already
+computes the Euler-form twist $q^{\langle M,N\rangle}$ relating the Hall algebra
+to its twisted form. The book has one title because its two halves are one
+subject, and the hinge is Chapter~V. Reading it against \S9 is the single
+highest-yield next step in this document: it decides whether \texttt{q-bool}
+contains a Langlands dual group or stops at Hall--Littlewood.
+\end{remark}
+
+\section{The two-parameter ceiling is the loop direction}\label{sec:daha}
+
+\texttt{q-container.pdf}~\S\emph{Ceiling} observes that Macdonald's
+$P_\lambda(x;q,t)$ has two parameters, that neither is the field size, that the
+theory as built lands at $q_{\mathrm{Mac}} = 0$ (Hall--Littlewood), and that a
+second direction is needed, with three candidates and no way to choose.
+
+\begin{claim}\label{cl:daha}
+The second direction is the loop. In Cherednik's double affine Hecke algebra
+\cite{Cherednik}, of which Macdonald polynomials are the eigenfunctions:
+$t$ is the Hecke parameter --- the field size, the $q+1$ of
+Definition~\ref{def:flag}, the Iwahori level --- and $q$ is the parameter of the
+translation lattice, i.e.\ loop rotation. The specialisation
+$q_{\mathrm{Mac}} \to 0$ giving Hall--Littlewood is exactly the specialisation
+that forgets the loop.
+\end{claim}
+
+\begin{remark}
+The loop variable is already present in \texttt{q-container.pdf}, written $t$,
+as the uniformiser of $\OO = \FF_q[[t]]$. If Claim~\ref{cl:daha} is right then
+the document's own two letters are Macdonald's two parameters, and the
+``second direction'' is not a new construction but a grading by $t$-adic degree
+on a structure already defined. This is a prediction and is not verified here.
+\end{remark}
+
+\section{\texttt{q-dirichlet.pdf}~\S7 is the automorphic side}\label{sec:autom}
+
+\texttt{q-dirichlet.pdf}~\S7 replaces the monoid of monic polynomials by the
+monoid of effective divisors on a smooth projective curve $X/\FF_q$, obtains
+$Z_X(u)$, and closes with a remark that categorifying the fibres --- replacing
+divisors by coherent sheaves --- gives Kapranov's Hall algebra of $X$.
+
+That remark is the door. Unramified automorphic forms for $\GL_n$ over the
+function field $\FF_q(X)$ are functions on $\Bun_n(\FF_q)$; the Hecke operators
+are modifications at closed points, which is \S\ref{sec:hecke} decategorified
+from $D$-modules to point counts; and Kapranov \cite{Kapranov} makes the Hall
+algebra of $\Coh(X)$ act by precisely these operators, recovering Eisenstein
+series. This is the setting of Drinfeld's and Lafforgue's theorems.
+
+\begin{remark}
+The document's own observation that the Euler product is the statement that Day
+convolution respects free generation is the right categorical account of why
+automorphic $L$-functions factor over places; and the local factor at a closed
+point $P$ is where the Satake parameter, a conjugacy class in $\dual{G}$, lives.
+\end{remark}
+
+\section{\texttt{lascoux}: three links, one of them internal}\label{sec:lascoux}
+
+\paragraph{(a) Crystals are the geometric-Satake shadow of the dual group.}
+Geometric Satake \cite{MV} gives
+$\Perv_{G(\OO)}(\Gr_G) \cong \Rep(\dual{G})$ as tensor categories, and the
+Mirkovi\'c--Vilonen cycles carry a canonical crystal structure isomorphic to
+Kashiwara's \cite{BG,Kamnitzer}. \texttt{lascoux-container.pdf}~\S``crystals are
+directed containers'' is therefore one functor from $\Rep(\dual{G})$. Note also
+that $\Gr_G = G(F)/G(\OO)$ is the space on which the spherical Hecke algebra of
+\S\ref{sec:satake} acts: crystals and Hall--Littlewood are two views of one
+space.
+
+\paragraph{(b) The plactic constants are the Hall constants at $t = 0$.}
+This is a bridge between the two repositories that does not pass through
+Langlands at all.
+
+\begin{proposition}\label{prop:v4}
+\OK. $f^{\lambda}_{\mu\nu}(0) = c^{\lambda}_{\mu\nu}$, the
+Littlewood--Richardson coefficient. Verified over $64$ instances,
+$|\lambda| \le 4$: the left side from the symbolic Hall--Littlewood expansion of
+Proposition~\ref{prop:v2}, the right side by independent brute-force
+enumeration of Littlewood--Richardson skew tableaux (rows weakly increasing,
+columns strictly increasing, reverse reading word a lattice word), itself
+sanity-checked against eight known coefficients.
+\end{proposition}
+
+\texttt{lascoux-container.pdf} asserts that the plactic Schur elements
+$S_\lambda$ multiply by Littlewood--Richardson;
+\texttt{q-container.pdf}~\S9 computes multiplication by
+$g^{\lambda}_{\mu\nu}(q)$. Proposition~\ref{prop:v4} plus
+Proposition~\ref{prop:v2} say these are the $t=0$ and generic-$t$ faces of one
+structure. The plactic monoid is the degenerate fibre of the Hall algebra.
+
+\paragraph{(c) The $q$-gap and the Macdonald ceiling are the same gap.}
+The section of \texttt{lascoux-container.pdf} headed ``The gap: $q$, LLT, and
+Hecke algebras'' states that there is no candidate route from a polynomial
+functor to a quantum group.
+LLT concerns Hecke algebras at roots of unity, and Ariki's theorem
+\cite{Ariki} identifies their decomposition numbers with the canonical basis of
+$U_v(\widehat{\mathfrak{sl}}_e)$ --- a quantum \emph{affine} algebra.
+
+\begin{claim}\label{cl:samegap}
+The missing direction in \texttt{lascoux} (LLT, quantum affine) and the missing
+direction in \texttt{q-bool} (Macdonald's second parameter, Claim~\ref{cl:daha})
+are the same direction: the loop. One gap, two repositories, two names.
+\end{claim}
+
+This is my claim, not a theorem. It is strongly suggested by the fact that both
+resolutions are affine objects over the same base, and it predicts that
+whichever repository first constructs the loop grading closes both gaps at once.
+
+\section{What does not link}\label{sec:not}
+
+Recorded so that the ledger is not only positive.
+
+\begin{description}[leftmargin=1.6em,style=nextline,nosep]
+\item[\texttt{finite-field-duality.pdf}.] The classification of nondegenerate
+forms over $\FF_q$ is the classification of the groups on which the
+non-self-dual Langlands duality acts ($\dual{\SO(2n+1)} = \Sp(2n)$), so the
+input data coincide. But nothing in the document uses the root datum, and the
+coincidence is of subject matter, not of construction. Weak.
+\item[\texttt{error-correcting.pdf}, \texttt{data-control.pdf}.] No link found.
+The data/control distinction is about variance in a container morphism; the
+Hecke correspondence is not a container morphism in that sense, because both
+legs move shapes. If there is a link it is through the flag container's algebra
+of dispatch (\texttt{data-control.pdf}~\S4), which by
+Theorem~\ref{thm:iwahori} is $H_n(q)$ --- but what that buys is not clear, and
+is not claimed here.
+\item[Arithmetic Langlands.] Nothing above reaches number fields. Everything is
+over $\FF_q$ or a local/function field. The Galois side never appears.
+\end{description}
+
+\section{\emph{Mai nafka minah}}\label{sec:nafka}
+
+What changes in practice, in order of cost.
+
+\begin{enumerate}[nosep,label=\arabic*.]
+\item Read Macdonald Chapter~V against \texttt{q-container.pdf}~\S9. Short
+chapter, input already in your notation, decides
+Theorem~\ref{thm:chV}'s applicability. Highest yield.
+\item Amend \texttt{schubert.pdf}: name the algebra $H_n(q)$
+(Theorem~\ref{thm:iwahori}), retitle the refutation around Grothendieck
+polynomials (Proposition~\ref{prop:zero}), close Question~5.2 with
+Kostant--Kumar (Proposition~\ref{prop:nilhecke}).
+\item Add Proposition~\ref{prop:v4} to \texttt{lascoux}: the plactic constants
+are the Hall constants at $t=0$. Cheap, verified, and it is the only statement
+joining the two repositories.
+\item Build the affine flag container (Question~\ref{q:affine}), test (i)
+first. This is the only route to $\dual{G}$ from where \texttt{q-bool} stands.
+\item Decide Claim~\ref{cl:daha} by computing whether the $t$-adic grading on
+$\OO = \FF_q[[t]]$ induces Macdonald's $q$. If yes, Claim~\ref{cl:samegap}
+follows and both gaps close.
+\end{enumerate}
+
+\section{Status of every claim}\label{sec:status}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{clcl}
+\toprule
+\# & claim & where & status \\
+\midrule
+1 & $S_i$ is convolution by $\mathbf{1}_{P_i}$; $T_i$ generate $H_n(q)$
+  & Thm.~\ref{thm:iwahori} & \CL{} (Iwahori); proof given \\
+2 & relations hold, re-derived from the geometry
+  & Prop.~\ref{prop:v1} & \OK{} --- $5/5$ cases, $315$ flags \\
+3 & $q\to0$ gives Demazure, basis is $\Groth_w$
+  & Prop.~\ref{prop:zero} & \CL{} (Lascoux--Sch.) \\
+4 & Question~5.2 is Kostant--Kumar nilHecke
+  & Prop.~\ref{prop:nilhecke} & \CL{}; the question is not open \\
+5 & $\dual{G}$ is the Bernstein centre of the \emph{affine} algebra
+  & Prop.~\ref{prop:centre} & \CL{} (Bernstein) \\
+6 & $\GL_2$ spherical identity and its Satake image
+  & Prop.~\ref{prop:v3} & \OK{} --- $p \in \{2,3,5\}$ \\
+7 & Hall's theorem: $g^\lambda_{\mu\nu} \leftrightarrow$ Hall--Littlewood
+  & Prop.~\ref{prop:v2} & \OK{} --- $128$ instances \\
+8 & Hall algebra $\cong$ spherical Hecke $\cong \Rep(\dual{\GL_n})$
+  & Thm.~\ref{thm:chV} & \CL{} (Macdonald Ch.~V); unverified \\
+9 & Macdonald's second parameter is the loop
+  & Cl.~\ref{cl:daha} & \CL{} (Cherednik); application \NEW{} \\
+10 & \texttt{q-dirichlet}~\S7 is the $\GL_n$ automorphic side
+  & \S\ref{sec:autom} & \CL{} (Kapranov); door left closed \\
+11 & crystals $\leftrightarrow$ MV cycles $\leftrightarrow \Rep(\dual{G})$
+  & \S\ref{sec:lascoux}(a) & \CL{} (Mirkovi\'c--Vilonen) \\
+12 & $f^\lambda_{\mu\nu}(0) = c^\lambda_{\mu\nu}$: the repo bridge
+  & Prop.~\ref{prop:v4} & \OK{} --- $64$ instances \\
+13 & the LLT gap and the Macdonald gap are one gap
+  & Cl.~\ref{cl:samegap} & \NEW{} --- my claim, unproved \\
+14 & affine flag container has $\Rep(\dual{\GL_n})$ as its centre
+  & Q.~\ref{q:affine} & \NEW{} --- not attempted \\
+15 & \texttt{finite-field-duality} links to root data
+  & \S\ref{sec:not} & weak; subject matter only \\
+16 & anything reaches arithmetic Langlands
+  & \S\ref{sec:not} & no \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Related work}
+
+\begin{thebibliography}{99}\small
+\bibitem{Iwahori} N. Iwahori. \emph{On the structure of a Hecke ring of a
+Chevalley group over a finite field}. J. Fac. Sci. Univ. Tokyo 10 (1964).
+The theorem $\End_G(\Ind_B^G \mathbf{1}) \cong H_n(q)$, i.e.\
+Theorem~\ref{thm:iwahori}.
+\bibitem{LS82} A. Lascoux, M.-P. Sch\"utzenberger. \emph{Structure de Hopf de
+l'anneau de cohomologie et de l'anneau de Grothendieck d'une vari\'et\'e de
+drapeaux}. C. R. Acad. Sci. Paris 295 (1982). Grothendieck polynomials; the
+basis the flag container actually produces.
+\bibitem{KK86} B. Kostant, S. Kumar. \emph{The nil Hecke ring and cohomology of
+$G/P$ for a Kac--Moody group}. Adv. Math. 62 (1986). Answers
+\texttt{schubert.pdf} Question~5.2.
+\bibitem{Lusztig89} G. Lusztig. \emph{Affine Hecke algebras and their graded
+version}. J. Amer. Math. Soc. 2 (1989). The interpolating object.
+\bibitem{Macdonald} I. G. Macdonald. \emph{Symmetric Functions and Hall
+Polynomials}, 2nd ed., OUP 1995. Ch.~II--III is \texttt{q-container.pdf}~\S9;
+Ch.~V is Theorem~\ref{thm:chV}.
+\bibitem{Cherednik} I. Cherednik. \emph{Double Affine Hecke Algebras}. LMS
+Lecture Notes 319, CUP 2005. Macdonald polynomials as DAHA eigenfunctions;
+Claim~\ref{cl:daha}.
+\bibitem{Kapranov} M. Kapranov. \emph{Eisenstein series and quantum affine
+algebras}. J. Math. Sci. 84 (1997). The Hall algebra of a curve acting by
+Hecke operators.
+\bibitem{MV} I. Mirkovi\'c, K. Vilonen. \emph{Geometric Langlands duality and
+representations of algebraic groups over commutative rings}. Ann. of Math. 166
+(2007). Geometric Satake.
+\bibitem{BG} A. Braverman, D. Gaitsgory. \emph{Crystals via the affine
+Grassmannian}. Duke Math. J. 107 (2001).
+\bibitem{Kamnitzer} J. Kamnitzer. \emph{Mirkovi\'c--Vilonen cycles and
+polytopes}. Ann. of Math. 171 (2010).
+\bibitem{Ariki} S. Ariki. \emph{On the decomposition numbers of the Hecke
+algebra of $G(m,1,n)$}. J. Math. Kyoto Univ. 36 (1996). The LLT gap of
+\texttt{lascoux}.
+\bibitem{KW} A. Kapustin, E. Witten. \emph{Electric-magnetic duality and the
+geometric Langlands program}. Commun. Number Theory Phys. 1 (2007). Background
+for \S\ref{sec:hecke}; not used above.
+\end{thebibliography}
+
+\end{document}
