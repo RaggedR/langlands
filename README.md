@@ -12,7 +12,8 @@ presentation of H_n(q).
 
 | File | What |
 |------|------|
-| `hecke-in-q-bool.pdf` | **The document.** Ten links, sixteen ledger rows, four verifications, and a section on what does not link |
+| `hecke-in-q-bool.pdf` | **Start here.** Ten links, sixteen ledger rows, four verifications, and a section on what does not link |
+| `research-program.pdf` | **What to actually do.** Three directions with milestones, kill criteria, sequencing and stated priors — and an objection to the premise that the links above open a programme |
 | `code/verify.py` | The four computations. `python3 code/verify.py`, about two minutes |
 
 ## The four verifications
@@ -29,6 +30,29 @@ Macdonald, and V1 shares no code with `q-bool/code/flag.py`.
 
 V4 is the only statement joining the two source repositories to each
 other rather than to Langlands.
+
+## What to do about it
+
+Everything in `hecke-in-q-bool.pdf` is classical, so the obvious
+continuations are re-derivations. `research-program.pdf` argues the one
+novel feature is the shape/position asymmetry — which `q-container.pdf`
+Theorem B records as an obstruction and which is better read as a
+description of a Bruhat cell decomposition — and proposes three
+directions from it:
+
+- **A. Hecke correspondences as bicomodules in Cont_q.** Hecke operators
+  are spans, not maps; RSK wants the same missing structure, so one
+  construction would close open problems in both repos. Highest ceiling
+  (25–35%), gated on the unobtained LICS 2024 no-go paper.
+- **B. Expander codes.** Joins `error-correcting.pdf` to the
+  Ramanujan-graph face of the Hecke operator. Tractable, applied, lower
+  ceiling. The fallback if A dies.
+- **C. The paving theorem.** q-containers are 𝔽_q-paved spaces. Would
+  give `q-container.pdf` its missing central theorem and explain its own
+  refuted conjecture. Cheapest, highest probability.
+
+Sequencing: obtain the LICS paper (an afternoon, it gates A) → Macdonald
+Ch. V (two days, de-risks §6) → C → A → B if A dies.
 
 ## Headline claims
 

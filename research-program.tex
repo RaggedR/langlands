@@ -1,0 +1,463 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2.5em}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!60!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{milestone}{Milestone}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{observation}[theorem]{Observation}
+\newcommand{\HQB}{\texttt{hecke-\allowbreak{}in-\allowbreak{}q-\allowbreak{}bool.pdf}}
+\newtheorem{hazard}[theorem]{Hazard}
+
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\OO}{\mathcal{O}}
+\newcommand{\cat}[1]{\mathbf{#1}}
+\newcommand{\Set}{\cat{Set}}
+\newcommand{\Vect}{\cat{Vect}}
+\newcommand{\Poly}{\cat{Poly}}
+\newcommand{\Cont}{\cat{Cont}}
+\newcommand{\Span}{\cat{Span}}
+\newcommand{\Prof}{\cat{Prof}}
+\newcommand{\Rep}{\mathrm{Rep}}
+\newcommand{\ext}[1]{\llbracket #1 \rrbracket}
+\newcommand{\con}{\triangleleft}
+\newcommand{\dual}[1]{{}^{L}\!#1}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\End}{End}
+\DeclareMathOperator{\GL}{GL}
+\DeclareMathOperator{\Gr}{Gr}
+\DeclareMathOperator{\rank}{rank}
+\newcommand{\qbin}[2]{\genfrac{[}{]}{0pt}{}{#1}{#2}_{q}}
+\newcommand{\Fl}{\mathrm{Fl}}
+\newcommand{\Groth}{\mathfrak{G}}
+
+\definecolor{okgreen}{rgb}{0.0,0.45,0.15}
+\definecolor{nored}{rgb}{0.65,0.0,0.0}
+\definecolor{openblue}{rgb}{0.0,0.25,0.6}
+\newcommand{\GO}{\textcolor{okgreen}{\textbf{do}}}
+\newcommand{\STOP}{\textcolor{nored}{\textbf{don't}}}
+\newcommand{\WAIT}{\textcolor{openblue}{\textbf{gated}}}
+
+\title{\bfseries Three Directions, and an Objection to the Question\\[0.4em]
+\large what to actually do with \HQB{}}
+\author{Robin Langer \and Claude}
+\date{24 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\HQB\ establishes that \texttt{q-bool} and
+\texttt{lascoux} contain, unnamed, a number of standard objects of the Langlands
+programme. Every one of those identifications is classical. This document argues
+that the obvious continuations --- building the affine flag container, chasing
+the dual group through Satake --- are therefore re-derivations rather than
+research, and that the one place where the container formalism has a feature the
+Hecke literature lacks is the shape/position asymmetry that
+\texttt{q-container.pdf} Theorem~B records as an obstruction and that
+\S\ref{sec:asym} here reinterprets as a description of a cell decomposition.
+Three directions follow from that reading. \textbf{A} (\S\ref{sec:A}):
+Hecke correspondences are spans, not maps, so the right container-theoretic home
+for them is a bicomodule; RSK wants the same missing structure, which joins the
+two repositories at the level of the open problem rather than the theorem.
+Highest ceiling, gated on an unobtained paper. \textbf{B} (\S\ref{sec:B}):
+expander codes, joining \texttt{error-correcting.pdf} to the Ramanujan-graph face
+of the Hecke operator --- tractable, applied, lower ceiling. \textbf{C}
+(\S\ref{sec:C}): a paving theorem characterising $q$-containers, which would give
+\texttt{q-container.pdf} the central theorem it currently lacks and explain its
+own refuted conjecture. \S\ref{sec:not} says what not to do, \S\ref{sec:seq}
+gives a sequencing with kill criteria, and \S\ref{sec:priors} gives honest
+priors.
+\end{abstract}
+
+\section{The objection: recognition is not research}\label{sec:obj}
+
+The mishnah is that \HQB{} opens a programme. Ten links,
+four verifications, a list of next steps.
+
+The objection is that all sixteen rows of its status table are marked
+\textbf{classical} or \textbf{open-and-not-attempted}, and that the classical
+ones are classical by a wide margin: Iwahori 1964, Lascoux--Sch\"utzenberger
+1982, Kostant--Kumar 1986, Macdonald's Chapter~V, Bernstein, Cherednik,
+Mirkovi\'c--Vilonen. What the document does is \emph{recognition}. It tells you
+where you already were. It produces nothing.
+
+The five continuations listed in its \emph{mai nafka minah} inherit that
+defect. Building the affine flag container terminates in a theorem of
+Bernstein's. Chasing Satake terminates in Macdonald's Chapter~V. Deciding
+whether the $t$-adic grading induces Macdonald's $q$ terminates in Cherednik.
+Each is a re-derivation in container notation of an object that does not need a
+new presentation, and \texttt{lascoux/lenses-in-my-thesis2.pdf} already contains
+the correct instinct about this in its box headed \emph{what the container
+language does not buy}.
+
+The resolution is to stop asking which link to chase and ask instead: where does
+the container formalism have a feature that the Hecke literature lacks? There is
+exactly one, and \texttt{q-bool} has already proved a theorem about it.
+
+\section{The asymmetry is a description, not an
+obstruction}\label{sec:asym}
+
+\texttt{q-container.pdf} Theorem~B states that linearising the shapes destroys
+the theory: a $q$-container must keep its shapes a bare set while its positions
+become $\FF_q$-spaces. \texttt{data-control.pdf} elevates this to a principle
+and argues, in its \S``Why the distinction cannot be repaired away'', that the
+set-ness of shapes is not a limitation awaiting a generalisation.
+
+Both documents treat this as an obstruction discovered. Read against \S3 of
+\HQB{}, it is instead a description arrived at.
+
+\begin{observation}\label{obs:asym}
+A Bruhat stratification of a flag variety is exactly a \emph{set} of
+cells, indexed by the Weyl group $W$, each of which is an \emph{affine
+space} $\FF_q^{\ell(w)}$. Shapes bare, positions linear. The reason shapes cannot be
+linearised is that $W$ is not a variety: there is no Weyl-group-shaped vector
+space for them to become.
+\end{observation}
+
+This is worth stating carefully because it changes what the formalism is
+\emph{for}. If Observation~\ref{obs:asym} is right in general, then a
+$q$-container is not a deformation of a data type. It is a presentation of a
+space with an affine paving, and the counting series of
+\texttt{q-container.pdf}~\S6 is a Poincar\'e polynomial. All three directions
+below are consequences of taking that seriously; \S\ref{sec:C} is the attempt to
+prove it.
+
+\section{Direction A: Hecke correspondences as bicomodules}\label{sec:A}
+
+\subsection{The negative result that motivates it}
+
+\HQB{}~\S10 records, among the things that do not link,
+that the Hecke correspondence is not a container morphism, because both legs
+move shapes. That negative is the interesting part.
+
+A container morphism $(u,f)$ is a \emph{map}: $u$ dispatches forward on shapes,
+$f$ routes backward on positions. A Hecke operator is a \emph{span}:
+\[
+  \Fl_n(\FF_q) \;\xleftarrow{\ p_1\ }\;
+  Z_i := \Fl_n \times_{\Fl_n^{(i)}} \Fl_n
+  \;\xrightarrow{\ p_2\ }\; \Fl_n(\FF_q),
+  \qquad
+  Z_i = \{(F,F') : \pi_i F = \pi_i F'\},
+\]
+and the algebra structure is composition of spans by pullback --- which is
+convolution, which is why $T_iT_j$ means anything at all. Spans of $G$-sets are
+$G$-equivariant profunctors; the Hecke algebra is an endomorphism algebra in
+that bicategory.
+
+So the missing notion is not a better kind of map. It is the layer above maps.
+
+\subsection{What that layer is in this formalism}
+
+Comonoids in $\Poly$ are small categories (Ahman--Uustalu for directed
+containers; Garner), and bicomodules between polynomial comonoids are the
+profunctor-like layer above them, specialising to spans when the comonoids are
+discrete. The formalism therefore already has the right shape of object. What it
+does not have is the $\FF_q$-linearised version, which is precisely the
+\texttt{q-bool} setting.
+
+\begin{definition}\label{def:qspan}
+Provisional. A \emph{$q$-bicomodule} from $S \con P$ to $T \con Q$ consists of a
+set $R$ of \emph{correspondence shapes} with maps $\sigma : R \to S$ and
+$\tau : R \to T$, together with, for each $r \in R$, a linear relation
+\[
+  \rho_r \;\subseteq\; P(\sigma r) \oplus Q(\tau r) ,
+\]
+composed by pullback on shapes and composition of linear relations on positions,
+with multiplicities given by counting fibres.
+\end{definition}
+
+The move from \emph{map} to \emph{relation} on the position plane is the whole
+proposal, and it is forced: a Hecke structure constant is a count of
+intermediate objects, which a function cannot record and a relation can.
+
+\subsection{What would count as success}
+
+Three milestones, in order, each falsifiable and the first two cheap.
+
+\begin{milestone}\label{m:A1}
+The Hecke span $Z_i$ of \S\ref{sec:A} is a $q$-bicomodule in the sense of
+Definition~\ref{def:qspan}, with $R$ the set of pairs $(w, w')$, $w' \in \{w,
+ws_i\}$, and $\rho$ the incidence of Schubert cells. One week.
+\end{milestone}
+
+\begin{milestone}\label{m:A2}
+Composition of $q$-bicomodules reproduces
+\[
+  T_i^2 \;=\; (q-1)T_i + q\,I .
+\]
+This is the sharp test, and it is decidable against
+\texttt{code/verify.py} V1, which already has the matrices for
+$(n,q) \in \{(2,2),(2,3),(3,2),(3,3),(4,2)\}$. If the composition law of
+Definition~\ref{def:qspan} does not produce the $q$ in the second term, the
+definition is wrong and should be changed rather than defended.
+\end{milestone}
+
+\begin{milestone}\label{m:A3}
+RSK is a $q$-bicomodule. \texttt{lascoux-container.pdf}~\S``What RSK becomes''
+already conjectures that RSK is a bicomodule between the two comonoids, and
+lists it as open. If Milestones~\ref{m:A1}--\ref{m:A3} all land, the two
+repositories share not a theorem but an open problem, which is a stronger form
+of connection: one construction closes both.
+\end{milestone}
+
+Beyond that, the ambitious end: whether the monoidal structure on
+$q$-bicomodules reproduces the Satake tensor structure, hence
+$\Rep(\dual{G})$ as structure on a polynomial comonoid. That is the payoff and
+it is not a milestone, because nothing about it is currently plannable.
+
+\subsection{The hazard, which is internal as well as external}
+
+\begin{hazard}\label{haz:licsno}
+Composition in Definition~\ref{def:qspan} requires the pullback on the shape
+plane to interact coherently with relation-composition on the position plane ---
+that is, a distributive law between the two planes of
+\texttt{data-control.pdf}. The LICS 2024 no-go theorems on directed-container
+distributive laws bear directly on this. They are listed in
+\texttt{lascoux/papers/INDEX.md} as \emph{paywalled and not obtained}.
+\end{hazard}
+
+This hazard is not merely a missing citation. \texttt{data-control.pdf} argues at
+length that the data/control distinction cannot be repaired away; a distributive
+law is exactly a repair; so the document's own central principle predicts that
+the distributive law may fail. If it does, Direction~A is dead, and the failure
+is informative rather than merely disappointing --- it would say that Hecke
+convolution is not expressible in this formalism and would explain why.
+
+\textbf{Obtain that paper before committing a month.} It is an afternoon, and it
+gates everything above.
+
+\section{Direction B: expander codes}\label{sec:B}
+
+The tractable direction, and the only one with applications.
+
+Three facts already in hand, from three different documents:
+
+\begin{enumerate}[nosep,label=(\roman*)]
+\item \texttt{error-correcting.pdf}: a container morphism over $\FF_q$
+dispatches on a shape and then routes data \emph{without inspecting it}; the
+routing is a matrix, so the morphism is a linear code, composition is matrix
+product, and rank is monotone under composition.
+\item \HQB{}~\S2: the Hecke operator for $\GL_2$ is the
+adjacency operator of the $(q+1)$-regular Bruhat--Tits tree, and Deligne's
+bound $|a_p| \le 2p^{(k-1)/2}$ is the optimal spectral gap --- which is where
+Ramanujan graphs come from (Lubotzky--Phillips--Sarnak, by arithmetic quotient).
+\item Sipser--Spielman expander codes are built from a $d$-regular expander plus
+a small inner code, and decode by a \emph{local} flip rule.
+\end{enumerate}
+
+\begin{question}\label{q:expander}
+Is a Sipser--Spielman code a container morphism whose shape set is the vertex
+set of an expander and whose position spaces carry the inner code? If so the
+expansion parameter is a property of the \emph{shape} plane and the inner code a
+property of the \emph{position} plane, and locality of decoding is the
+statement that routing does not inspect.
+\end{question}
+
+That last clause is why this direction is worth doing rather than merely
+possible. \texttt{data-control.pdf}'s distinction is decorative in most of its
+instances; in a locally-decodable code it does real work, because ``the decoder
+looks at the graph and not at the data'' is a correctness property, not a
+description.
+
+\begin{milestone}\label{m:B1}
+Express the Tanner / Sipser--Spielman construction as a composite of container
+morphisms, and check that the rank-monotonicity theorem of
+\texttt{error-correcting.pdf} yields the standard rate bound
+$R \ge 1 - 2(1-r)$ for inner rate $r$. If the formalism cannot recover a bound
+it should be able to recover, it is not buying anything here either.
+\end{milestone}
+
+\begin{milestone}\label{m:B2}
+Exhibit an LPS Ramanujan graph as the shape plane of such a container and read
+the spectral gap off the Hecke operator of \HQB{}~\S2
+rather than importing it. This is the join: the same operator, in the same
+$q$, serving a coding-theoretic purpose.
+\end{milestone}
+
+Ceiling: modest. The coding theory is well-trodden and the container reading is
+unlikely to improve a bound. Floor: high --- the milestones are achievable and
+the write-up is publishable as an exposition even if nothing is new.
+
+\section{Direction C: the paving theorem}\label{sec:C}
+
+Self-contained, improves an existing document rather than starting a new one,
+and is the direct attempt to prove Observation~\ref{obs:asym}.
+
+\begin{conjecture}\label{conj:pave}
+A $q$-container with finite shape set ``is'' a finite-type $\FF_q$-scheme with
+an affine paving indexed by that set: shapes index strata, positions are the
+strata, and the counting series of \texttt{q-container.pdf}~\S6 is the
+Poincar\'e polynomial of the paving evaluated at the field size.
+\end{conjecture}
+
+If this is right it does three things at once for \texttt{q-container.pdf}.
+
+\begin{enumerate}[nosep,label=\arabic*.]
+\item It \emph{explains} Theorem~B instead of recording it: shapes cannot
+linearise because the index set of a paving is not itself a variety.
+\item It explains the refuted Conjecture~C in the same breath --- $\Vect_{\FF_q}$
+being self-dual is a statement about the position plane, and the failure of a
+second derivative is a statement that the shape plane has no dual.
+\item It supplies the Targets-table row for $q$-Pascal for free, since the
+Grassmannian container ought to have counting series $\qbin{n}{k}$ by the
+Schubert paving of $\Gr(k,n)$, and $q$-Pascal is then the cell recursion rather
+than an identity to be verified.
+\end{enumerate}
+
+\begin{milestone}\label{m:C1}
+Compute the Grassmannian container --- shapes the partitions in a $k \times
+(n-k)$ box, positions $\FF_q^{|\lambda|}$ --- confirm the counting series is
+$\qbin{n}{k}$, and derive $q$-Pascal from the cell recursion. This is a day, and
+it is the smallest possible test of Conjecture~\ref{conj:pave}.
+\end{milestone}
+
+\begin{milestone}\label{m:C2}
+State the correspondence in both directions and find the first counterexample.
+A $q$-container is bare data; a paved scheme has a topology; so the
+correspondence is at best an equivalence onto a subcategory, and locating the
+boundary is the theorem.
+\end{milestone}
+
+Ceiling: modest but real --- a characterisation theorem is a better centre for
+\texttt{q-container.pdf} than a list of verified propositions. Probability of
+something true and provable: high.
+
+\section{What not to do}\label{sec:not}
+
+\begin{description}[leftmargin=1.6em,style=nextline,nosep]
+\item[\STOP{} Build the affine flag container.] This is
+\HQB{} Question~5.4 and it is my own suggestion; I am
+withdrawing it as a priority. It is the most obvious next step and the least
+rewarding: a long construction whose endpoint is Bernstein's description of the
+centre, and whose novelty is notational.
+\item[\STOP{} Chase Macdonald's second parameter as a construction.] Claim~7.2
+of that document is very likely right, and being right costs nothing to record
+and everything to re-derive.
+\item[\WAIT{} Read Macdonald Chapter~V.] Two days, and it is de-risking rather
+than direction: it decides whether \S6 of that document stands on anything.
+Worth doing, not worth planning around.
+\end{description}
+
+\section{Sequencing, with kill criteria}\label{sec:seq}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}rlll@{}}
+\toprule
+& step & cost & kill criterion \\
+\midrule
+1 & Obtain the LICS 2024 no-go paper & an afternoon & --- \\
+2 & Macdonald Ch.~V against \texttt{q-container}~\S9 & two days & --- \\
+3 & Direction~C, Milestone~\ref{m:C1} (Grassmannian) & a day
+  & counting series $\ne \qbin{n}{k}$ \\
+4 & Direction~C, Milestone~\ref{m:C2} (the boundary) & two weeks
+  & no clean subcategory after two weeks \\
+5 & Direction~A, Milestones~\ref{m:A1}--\ref{m:A2} & two weeks
+  & composition does not give $(q-1)T_i + q$ \\
+6 & Direction~A, Milestone~\ref{m:A3} (RSK) & a month
+  & the distributive law of Hazard~\ref{haz:licsno} fails \\
+7 & Direction~B if A dies & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Step~1 gates steps~5--6 and costs an afternoon, so it goes first regardless of
+enthusiasm. Step~3 is deliberately placed before step~5: it is cheap, it is
+self-contained, and it is useful to have one thing land before starting the one
+that might not.
+
+Direction~B is the fallback rather than the plan, because it survives contact
+with a negative result: if Hazard~\ref{haz:licsno} closes Direction~A, nothing
+about Direction~B changes.
+
+\section{Priors}\label{sec:priors}
+
+Stated before the work, so they can be scored afterwards.
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}clcc@{}}
+\toprule
+& claim & prior & if it lands \\
+\midrule
+\ref{obs:asym} & the shape/position asymmetry is a paving & $70\%$
+  & reframes \texttt{q-container} \\
+\ref{conj:pave} & $q$-containers are $\FF_q$-paved spaces, on a subcategory
+  & $60\%$ & central theorem for \texttt{q-container} \\
+\ref{m:C1} & Grassmannian container has series $\qbin{n}{k}$ & $90\%$
+  & Targets row, free \\
+\ref{m:A1} & the Hecke span is a $q$-bicomodule & $75\%$
+  & definition is on the right track \\
+\ref{m:A2} & composition gives $(q-1)T_i + q$ & $45\%$
+  & the definition is correct \\
+\ref{m:A3} & RSK is a $q$-bicomodule & $35\%$
+  & the two repositories join \\
+--- & Direction~A yields something publishable & $25$--$35\%$
+  & a container-native Hecke theory \\
+\ref{haz:licsno} & the distributive law is the obstruction & $50\%$
+  & informative either way \\
+\ref{q:expander} & expander codes are container morphisms & $80\%$
+  & applied write-up \\
+\ref{m:B1} & the rate bound falls out of rank monotonicity & $55\%$
+  & the formalism earns its keep \\
+--- & anything here reaches arithmetic Langlands & $<5\%$
+  & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The honest summary of that table: the highest-probability rows are the ones that
+improve documents you have already written, and the highest-ceiling row is at
+$25$--$35\%$ and gated on a paper you cannot currently read. That is a normal
+shape for a research programme and is not an argument against it. It is an
+argument for doing step~1 this week.
+
+\section{Sources to obtain}
+
+\begin{description}[leftmargin=1.6em,style=nextline,nosep]
+\item[LICS 2024, no-go theorems for directed-container distributive laws.]
+Paywalled; listed unobtained in \texttt{lascoux/papers/INDEX.md}. Gates
+Direction~A. Highest priority.
+\item[Ahman, Uustalu.] \emph{Directed containers as categories}. The comonoid
+half of Definition~\ref{def:qspan}.
+\item[Garner.] \emph{Polynomial comonads} / the comonoid--category
+correspondence, and bicomodules as the layer above.
+\item[Spivak, Niu.] \emph{Polynomial Functors: A Mathematical Theory of
+Interaction}. Bicomodules in $\Poly$; the ambient calculus for
+Definition~\ref{def:qspan}.
+\item[Macdonald.] \emph{Symmetric Functions and Hall Polynomials}, Ch.~V. Step~2
+of \S\ref{sec:seq}.
+\item[Sipser, Spielman.] \emph{Expander codes}, IEEE Trans.\ Inform.\ Theory 42
+(1996). Direction~B.
+\item[Lubotzky, Phillips, Sarnak.] \emph{Ramanujan graphs}, Combinatorica 8
+(1988). Milestone~\ref{m:B2}.
+\end{description}
+
+\end{document}
